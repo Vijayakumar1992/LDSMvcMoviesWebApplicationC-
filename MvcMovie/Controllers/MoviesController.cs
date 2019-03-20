@@ -19,12 +19,16 @@ namespace MvcMovie.Controllers
         }
 
         // GET: Movies
-        public async Task<IActionResult> Index(string movieGenre, string searchString)
+        public async Task<IActionResult> Index(string movieGenre, string releaseDate, string searchString)
         {
             // Use LINQ to get list of genres.
             IQueryable<string> genreQuery = from m in _context.Movie
-                                            orderby m.Genre
+                                            orderby m.Genre                                           
                                             select m.Genre;
+            // Use LINQ to get list of releaseDate.
+            IQueryable<string> releasedateQuery = from rd in _context.Movie
+                                            orderby String.Format(rd.ReleaseDate.ToString("MM/dd/yyyy"))
+                                            select String.Format(rd.ReleaseDate.ToString("MM/dd/yyyy"));
 
             var movies = from m in _context.Movie
                          select m;
@@ -38,10 +42,20 @@ namespace MvcMovie.Controllers
             {
                 movies = movies.Where(x => x.Genre == movieGenre);
             }
+            
+            /*release date code*/
+            var releasedate = from rd in _context.Movie
+                         select rd;
+
+            if (!string.IsNullOrEmpty(releaseDate))
+            {
+                releasedate = releasedate.Where(x => String.Format(x.ReleaseDate.ToString("MM/dd/yyyy")) == releaseDate);
+            }            
 
             var movieGenreVM = new MovieGenreViewModel
-            {
+            {  
                 Genres = new SelectList(await genreQuery.Distinct().ToListAsync()),
+                ReleaseDate = new SelectList(await releasedateQuery.Distinct().ToListAsync()),
                 Movies = await movies.ToListAsync()
             };
 
