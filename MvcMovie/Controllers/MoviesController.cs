@@ -19,16 +19,16 @@ namespace MvcMovie.Controllers
         }
 
         // GET: Movies
-        public async Task<IActionResult> Index(string movieGenre, string releaseDate, string searchString)
+        public async Task<IActionResult> Index(string movieGenre, string searchString, string SortBy)
         {
             // Use LINQ to get list of genres.
             IQueryable<string> genreQuery = from m in _context.Movie
                                             orderby m.Genre                                           
                                             select m.Genre;
             // Use LINQ to get list of releaseDate.
-            IQueryable<string> releasedateQuery = from rd in _context.Movie
-                                            orderby String.Format(rd.ReleaseDate.ToString("MM/dd/yyyy"))
-                                            select String.Format(rd.ReleaseDate.ToString("MM/dd/yyyy"));
+            //IQueryable<string> releasedateQuery = from rd in _context.Movie
+            //                                orderby String.Format(rd.ReleaseDate.ToString("MM/dd/yyyy"))
+            //                                select String.Format(rd.ReleaseDate.ToString("MM/dd/yyyy"));
 
             var movies = from m in _context.Movie
                          select m;
@@ -40,22 +40,43 @@ namespace MvcMovie.Controllers
 
             if (!string.IsNullOrEmpty(movieGenre))
             {
-                movies = movies.Where(x => x.Genre == movieGenre);
+                movies = movies.Where(x => x.Genre == movieGenre);              
             }
-            
-            /*release date code*/
-            var releasedate = from rd in _context.Movie
-                         select rd;
 
-            if (!string.IsNullOrEmpty(releaseDate))
+            if (!string.IsNullOrEmpty(SortBy))
             {
-                releasedate = releasedate.Where(x => String.Format(x.ReleaseDate.ToString("MM/dd/yyyy")) == releaseDate);
-            }            
+
+                if (SortBy == "ReleaseDate")
+                {
+                    movies = movies.OrderBy(x => x.ReleaseDate);
+                }
+
+                if (SortBy == "Title")
+                {
+                    movies = movies.OrderBy(x => x.Title);
+                }
+
+                if (SortBy == "Genre")
+                {
+                    movies = movies.OrderBy(x => x.Genre);
+                }
+
+                if (SortBy == "Price")
+                {
+                    movies = movies.OrderBy(x => x.Price);
+                }
+
+                if (SortBy == "Rating")
+                {
+                    movies = movies.OrderBy(x => x.Rating);
+                }
+            }
+                               
 
             var movieGenreVM = new MovieGenreViewModel
             {  
-                Genres = new SelectList(await genreQuery.Distinct().ToListAsync()),
-                ReleaseDate = new SelectList(await releasedateQuery.Distinct().ToListAsync()),
+                //Genres = new SelectList(await genreQuery.Distinct().ToListAsync()),
+                //ReleaseDate = new SelectList(await releasedateQuery.Distinct().ToListAsync()),
                 Movies = await movies.ToListAsync()
             };
 
@@ -91,7 +112,7 @@ namespace MvcMovie.Controllers
         // more details see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create([Bind("Id,Title,ReleaseDate,Genre,Price,Rating")] Movie movie)
+        public async Task<IActionResult> Create([Bind("Id,Title,Genre,Price,Rating")] Movie movie)
         {
             if (ModelState.IsValid)
             {
@@ -123,7 +144,7 @@ namespace MvcMovie.Controllers
         // more details see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(int id, [Bind("Id,Title,ReleaseDate,Genre,Price,Rating")] Movie movie)
+        public async Task<IActionResult> Edit(int id, [Bind("Id,Title,Genre,Price,Rating")] Movie movie)
         {
             if (id != movie.Id)
             {
